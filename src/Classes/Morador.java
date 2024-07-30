@@ -32,8 +32,7 @@ public class Morador {
 			condsImprimir += c.toString();
 		}
 		
-		return "\nNome: "+nome+
-				"\nCPF: "+cpf+
+		return "Nome: "+nome+" | CPF: "+cpf+
 				"\nCondomínios:"+condsImprimir;
 	}
 	

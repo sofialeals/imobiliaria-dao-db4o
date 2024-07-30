@@ -1,7 +1,10 @@
 package DAOdb4o;
 
+import java.util.ArrayList;
 import java.util.List;
+
 import com.db4o.query.Query;
+
 import Classes.Boleto;
 
 public class DAOBoleto extends DAO<Boleto>{
@@ -36,5 +39,17 @@ public class DAOBoleto extends DAO<Boleto>{
 		else {
 			return null;
 		}
+	}
+	
+	public List<Boleto> boletosNPMorador(Object chave){
+		String cpf = (String) chave;
+		Query q = manager.query();
+		q.constrain(Boleto.class);
+		q.descend("morador").descend("cpf").constrain(cpf);
+		q.descend("pagou").constrain(false);
+		
+		List<Boleto> resultados = q.execute();
+		
+		return resultados;
 	}
 }

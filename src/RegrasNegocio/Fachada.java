@@ -23,7 +23,6 @@ public class Fachada {
 // INICIALIZAÇÃO E FINALIZAÇÃO
 	public static void inicializar(){
 		DAO.open();
-		Fachada.adcBoleto();
 	}
 	public static void finalizar(){
 		DAO.close();
@@ -66,20 +65,24 @@ public class Fachada {
 		return boletos;
 	}
 	
-	public static boolean pagarBoleto(int codBoleto) {
+	public static boolean pagarBoleto(int codBoleto) throws Exception{
 		DAO.begin();
 		Boleto boleto = Fachada.buscarBoleto(codBoleto);
-		Morador morador = boleto.getMorador();
-		Condominio condominio = boleto.getCondominio();
-		Integer apartamento = boleto.getApartamento();
 		
-		for(Boleto b : morador.getBoletos()) {
-			if(b.getData().getMonthValue() == LocalDate.now().getMonthValue() - 1) {
-				if(b.getApartamento() == apartamento && b.getCondominio() == condominio && b.getPagou() == false) {
-					return false;
-				}
-			}
+		if(boleto == null) {
+			throw new Exception("O boleto de código "+codBoleto+" não existe");
 		}
+		
+		Morador morador = boleto.getMorador();
+		List<Boleto> boletosNP = Fachada.boletosNPMorador(morador.getCpf());
+		if(boletosNP.size() >= 3) {
+			throw new Exception("Existem 3 ou mais boletos em atraso. Entre em acordo para conseguir pagar o atual.");
+		}
+		
+		if(boleto.getPagou() == true) {
+			throw new Exception("O boleto de código "+codBoleto+" já foi pago.");
+		}
+		
 		boleto.pagar();
 		daoboleto.update(boleto);
 		DAO.commit();
@@ -92,19 +95,9 @@ public class Fachada {
 		return boletosNP;
 	}
 	
-	public static int gerarCodBarras() {
-		Random random = new Random();
-        int codBarras = random.nextInt(100000);;
-        
-        int tam = String.valueOf(codBarras).length();
-        
-        if (tam < 5) {
-            int complemento = 5 - tam;
-            String numFormatado = "0".repeat(complemento) + String.valueOf(codBarras);
-            codBarras = Integer.parseInt(numFormatado);
-        }
-        
-        return codBarras;
+	public static List<Boleto> boletosNPMorador(String cpf){
+		List<Boleto> boletosNPMorador = daoboleto.boletosNPMorador(cpf);
+		return boletosNPMorador;
 	}
 	
 	public static Boleto buscarBoleto(int codBarras) {
@@ -113,22 +106,19 @@ public class Fachada {
 		return boleto;
 	}
 	
-	public static void adcBoleto() {
-		LocalDate dataAtual = LocalDate.now();
-		if(Fachada.listarMoradores().size() > 0) {
-			for(Morador m : Fachada.listarMoradores()) {
-				if(m.getBoletos().size() > 0) {
-					for(Boleto b : m.getBoletos()) {
-						if(m.getCondominios().contains(b.getCondominio())) {
-							if(dataAtual.getMonthValue() > b.getData().getMonthValue() || (dataAtual.getMonthValue() == 1 && b.getData().getMonthValue() == 12)) {
-								Fachada.gerarBoleto(b.getCondominio(), m, b.getApartamento(), b.getValor());
-							}
-						}
-					}
-				}
-			}
-		}
-		
+	public static int gerarCodBarras() {
+		Random random = new Random();
+        int codBarras = random.nextInt(100000);;
+        
+        int tam = (String.valueOf(codBarras)).length();
+        
+        if (tam < 5) {
+            int complemento = 5 - tam;
+            String numFormatado = "0".repeat(complemento) + String.valueOf(codBarras);
+            codBarras = Integer.parseInt(numFormatado);
+        }
+        
+        return codBarras;
 	}
 	
 // MÉTODOS DO CONDOMÍNIO
@@ -183,6 +173,10 @@ public class Fachada {
 			throw new Exception("O morador de CPF "+cpf+" já está cadastrado.");
 		}
 		
+		if(nome.equals("") || cpf.equals("")) {
+			throw new Exception("Existem campos vazios. Preencha-os e tente novamente.");
+		}
+		
 		morador = new Morador(nome, cpf);
 		daomorador.create(morador);
 		DAO.commit();
@@ -218,6 +212,7 @@ public class Fachada {
 	
 	public static List<Morador> listarMoradores(){
 		List<Morador> moradores = daomorador.readAll();
+		
 		return moradores;
 	}
 	
@@ -226,17 +221,39 @@ public class Fachada {
 		return inadsCondX;
 	}
 	
-	public static Morador buscarMorador(String cpf) {
+	public static Morador buscarMorador(String cpf){
 		Morador morador = daomorador.read(cpf);
+		
 		return morador;
 	}
 	
+	public static String exibirMoradores() {
+		List<Morador> moradores = daomorador.readAll();
+		String moradoresFormatado = "";
+		
+		if(moradores.size() == 0) {
+			return "Não há moradores.";
+		}
+		
+		for(Morador m : moradores) {
+			moradoresFormatado += m + "\n\n";
+		}
+		
+		return moradoresFormatado;
+	}
+	
 // REGRAS DE NEGÓCIO
-	public static void criarContrato(int idCond, String cpfMorador, double valorAluguel) {
+	public static void criarContrato(int idCond, String cpfMorador, double valorAluguel) throws Exception{
 		DAO.begin();
 		
 		Condominio condominio = Fachada.buscarCondominio(idCond);
+		if(condominio == null) {
+			throw new Exception("O condomínio de ID "+idCond+" não existe.");
+		}
 		Morador morador = Fachada.buscarMorador(cpfMorador);
+		if(morador == null) {
+			throw new Exception("O morador de CPF "+cpfMorador+" não existe.");
+		}
 		
 		ArrayList<Integer> aparts = condominio.getApartamentos();
 		Integer numApart;
@@ -266,11 +283,17 @@ public class Fachada {
 		DAO.commit();
 	}
 	
-	public static void encerrarContrato(int idCond, String cpfMorador) {
+	public static void encerrarContrato(int idCond, String cpfMorador) throws Exception{
 		DAO.begin();
 		
 		Condominio condominio = Fachada.buscarCondominio(idCond);
+		if(condominio == null) {
+			throw new Exception("O condomínio de ID "+idCond+" não existe.");
+		}
 		Morador morador = Fachada.buscarMorador(cpfMorador);
+		if(morador == null) {
+			throw new Exception("O morador de CPF "+cpfMorador+" não existe.");
+		}
 		
 		for(Integer ap : condominio.getApartamentos()) {
 			if(morador.getApartamentos().contains(ap)) {
@@ -286,5 +309,59 @@ public class Fachada {
 		daomorador.update(morador);
 		
 		DAO.commit();
+	}
+	
+	public static boolean fazerAcordo(String cpfMorador) throws Exception{
+		if(cpfMorador.equals("")) {
+			throw new Exception("O campo CPF está vazio.");
+		}
+		
+		Morador morador = Fachada.buscarMorador(cpfMorador);
+
+		if(morador == null) {
+			throw new Exception("O morador de CPF "+cpfMorador+" não existe.");
+		}
+		
+		List<Boleto> boletosNaoPagos = daoboleto.boletosNPMorador(cpfMorador);
+		if(boletosNaoPagos.size() < 3) {
+			throw new Exception("O morador ainda não precisa fazer um acordo.");
+		}
+		
+		for(Boleto b : boletosNaoPagos) {
+			Fachada.pagarBoleto(b.getCodBarras());
+		}
+		
+		return true;
+	}
+	
+	public static int adcBoleto() {
+		int qntBoletos = 0;
+		LocalDate dataAtual = LocalDate.now();
+		if(Fachada.listarMoradores().size() > 0) {
+			for(Morador m : Fachada.listarMoradores()) {
+				if(m.getBoletos().size() > 0) {
+					for(Boleto b : m.getBoletos()) {
+						if(m.getCondominios().contains(b.getCondominio())) {
+							if(dataAtual.getMonthValue() > b.getData().getMonthValue() || (dataAtual.getMonthValue() == 1 && b.getData().getMonthValue() == 12)) {
+								Fachada.gerarBoleto(b.getCondominio(), m, b.getApartamento(), b.getValor());
+								qntBoletos += 1;
+							}
+						}
+					}
+				}
+			}
+		}
+		return qntBoletos;
+	}
+	
+	public static double valorAtrasados(String cpf){
+		List<Boleto> boletosNPMorador = daoboleto.boletosNPMorador(cpf);
+		double valorTotal = 0;
+		
+		for(Boleto b : boletosNPMorador){
+			valorTotal += b.getValor();
+		}
+		
+		return valorTotal;
 	}
 }
