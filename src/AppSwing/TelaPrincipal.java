@@ -42,6 +42,8 @@ public class TelaPrincipal {
 	private JTextField inputValorAluguel;
 	private JTextField inputIdEC;
 	private JTextField inputCpfEC;
+	private JTextField inputNMoradores;
+	private JTextField inputIdCondInads;
 
 	/**
 	 * Launch the application.
@@ -73,6 +75,7 @@ public class TelaPrincipal {
 		
 		menuPrincipal = new JFrame();
 		JLabel lblMesRef = new JLabel("");
+		JTextArea exibirTodosConds = new JTextArea();
 		JTextArea listagemMoradores = new JTextArea();
 		
 		menuPrincipal.addWindowListener(new WindowAdapter() {
@@ -83,6 +86,7 @@ public class TelaPrincipal {
 				lblMesRef.setText(meses[mesAtual-1]);
 				
 				listagemMoradores.setText(Fachada.exibirMoradores());
+				exibirTodosConds.setText(Fachada.exibirCondominios());
 			}
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -373,6 +377,27 @@ public class TelaPrincipal {
 		condominios.add(lblEndCond);
 		
 		JButton botaoCadCond = new JButton("CADASTRAR");
+		botaoCadCond.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String nomeCond = inputNomeCond.getText();
+				String endCond = inputEndCond.getText();
+				
+				try {
+					Fachada.cadastrarCondominio(nomeCond, endCond);
+					JOptionPane.showMessageDialog(menuPrincipal, "Condomínio cadastrado com sucesso.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+					inputNomeCond.setText("");
+					inputEndCond.setText("");
+					inputNomeCond.requestFocus();
+					exibirTodosConds.setText(Fachada.exibirCondominios());
+				} catch (Exception erroCond) {
+					JOptionPane.showMessageDialog(menuPrincipal, erroCond.getMessage(), "Erro", JOptionPane.WARNING_MESSAGE);
+					inputNomeCond.setText("");
+					inputEndCond.setText("");
+					inputNomeCond.requestFocus();
+				}
+				
+			}
+		});
 		botaoCadCond.setForeground(Color.WHITE);
 		botaoCadCond.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
 		botaoCadCond.setBackground(new Color(0, 102, 51));
@@ -407,6 +432,23 @@ public class TelaPrincipal {
 		condominios.add(inputIdCond);
 		
 		JButton botaoExcCond = new JButton("EXCLUIR");
+		botaoExcCond.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int idCond = Integer.valueOf(inputIdCond.getText());
+				
+				try {
+					Fachada.excluirCondominio(idCond);
+					JOptionPane.showMessageDialog(menuPrincipal, "O condomínio de ID "+idCond+" foi excluído.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+					inputIdCond.setText("");
+					inputIdCond.requestFocus();
+					exibirTodosConds.setText(Fachada.exibirCondominios());
+				} catch (Exception erroExcCond) {
+					JOptionPane.showMessageDialog(menuPrincipal, erroExcCond.getMessage(), "Erro", JOptionPane.WARNING_MESSAGE);
+					inputIdCond.setText("");
+					inputIdCond.requestFocus();
+				}
+			}
+		});
 		botaoExcCond.setForeground(Color.WHITE);
 		botaoExcCond.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
 		botaoExcCond.setBackground(new Color(0, 102, 51));
@@ -425,6 +467,7 @@ public class TelaPrincipal {
 		condominios.add(lblOcupConds);
 		
 		JLabel lblInads = new JLabel("INADIMPLENTES");
+		lblInads.setVerticalAlignment(SwingConstants.TOP);
 		lblInads.setHorizontalAlignment(SwingConstants.CENTER);
 		lblInads.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 18));
 		lblInads.setBounds(280, 334, 334, 23);
@@ -434,49 +477,117 @@ public class TelaPrincipal {
 		scrollPane_1.setBounds(280, 71, 334, 80);
 		condominios.add(scrollPane_1);
 		
-		JTextArea exibirTodosConds = new JTextArea();
+		exibirTodosConds.setEditable(false);
 		scrollPane_1.setViewportView(exibirTodosConds);
-		exibirTodosConds.setEnabled(false);
-		exibirTodosConds.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 15));
+		exibirTodosConds.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 18));
 		
 		JButton botaoListarConds = new JButton("LISTAR");
+		botaoListarConds.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				exibirTodosConds.setText(Fachada.exibirCondominios());
+			}
+		});
 		botaoListarConds.setForeground(Color.WHITE);
 		botaoListarConds.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
 		botaoListarConds.setBackground(new Color(0, 102, 51));
 		botaoListarConds.setBounds(280, 152, 334, 25);
 		condominios.add(botaoListarConds);
 		
-		JButton botaoListarOcup = new JButton("LISTAR");
-		botaoListarOcup.setForeground(Color.WHITE);
-		botaoListarOcup.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
-		botaoListarOcup.setBackground(new Color(0, 102, 51));
-		botaoListarOcup.setBounds(280, 297, 334, 25);
-		condominios.add(botaoListarOcup);
-		
 		JScrollPane scrollPane_2 = new JScrollPane();
-		scrollPane_2.setBounds(280, 216, 334, 80);
+		scrollPane_2.setBounds(280, 216, 334, 75);
 		condominios.add(scrollPane_2);
 		
 		JTextArea exibirOcupConds = new JTextArea();
+		exibirOcupConds.setEditable(false);
 		scrollPane_2.setViewportView(exibirOcupConds);
-		exibirOcupConds.setEnabled(false);
-		exibirOcupConds.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 15));
+		exibirOcupConds.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 18));
 		
 		JScrollPane scrollPane_3 = new JScrollPane();
-		scrollPane_3.setBounds(280, 358, 334, 80);
+		scrollPane_3.setBounds(280, 358, 334, 75);
 		condominios.add(scrollPane_3);
 		
 		JTextArea exibirInads = new JTextArea();
+		exibirInads.setEditable(false);
 		scrollPane_3.setViewportView(exibirInads);
-		exibirInads.setEnabled(false);
-		exibirInads.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 15));
+		exibirInads.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 18));
 		
 		JButton botaoListarInads = new JButton("LISTAR");
+		botaoListarInads.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(inputIdCondInads.getText().equals("")) {
+						JOptionPane.showMessageDialog(menuPrincipal, "O campo ID está vazio. Digite o ID de um condomínio e tente novamemente.", "Erro", JOptionPane.WARNING_MESSAGE);
+						inputIdCondInads.requestFocus();
+					} else {
+						int idCond = Integer.valueOf(inputIdCondInads.getText());
+						exibirInads.setText(Fachada.exibirInadsCondX(idCond));
+						inputIdCondInads.setText("");
+						inputIdCondInads.requestFocus();
+					}
+				} catch (Exception erroInads) {
+					JOptionPane.showMessageDialog(menuPrincipal, erroInads.getMessage(), "Erro", JOptionPane.WARNING_MESSAGE);
+					inputIdCondInads.setText("");
+					inputIdCondInads.requestFocus();
+				}
+			}
+		});
 		botaoListarInads.setForeground(Color.WHITE);
 		botaoListarInads.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
 		botaoListarInads.setBackground(new Color(0, 102, 51));
-		botaoListarInads.setBounds(280, 439, 334, 25);
+		botaoListarInads.setBounds(527, 438, 87, 25);
 		condominios.add(botaoListarInads);
+		
+		JLabel lblQntMoradores = new JLabel("Nº DE MORADORES:");
+		lblQntMoradores.setHorizontalAlignment(SwingConstants.LEFT);
+		lblQntMoradores.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
+		lblQntMoradores.setBounds(280, 301, 130, 14);
+		condominios.add(lblQntMoradores);
+		
+		inputNMoradores = new JTextField();
+		inputNMoradores.setToolTipText("Nome do morador.");
+		inputNMoradores.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 15));
+		inputNMoradores.setColumns(10);
+		inputNMoradores.setBounds(435, 296, 87, 25);
+		condominios.add(inputNMoradores);
+		
+		JLabel lblIdInads = new JLabel("ID DO CONDOMÍNIO:");
+		lblIdInads.setHorizontalAlignment(SwingConstants.LEFT);
+		lblIdInads.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
+		lblIdInads.setBounds(280, 442, 130, 16);
+		condominios.add(lblIdInads);
+		
+		JButton botaoListarOcup = new JButton("LISTAR");
+		botaoListarOcup.setBounds(527, 296, 87, 25);
+		condominios.add(botaoListarOcup);
+		botaoListarOcup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(inputNMoradores.getText().equals("")) {
+						JOptionPane.showMessageDialog(menuPrincipal, "O campo Número de Moradores está vazio. Digite uma quantidade e tente novamemente. ", "Erro", JOptionPane.WARNING_MESSAGE);
+						inputNMoradores.requestFocus();
+					} else {
+						int numMoradores = Integer.valueOf(inputNMoradores.getText());
+						exibirOcupConds.setText(Fachada.exibirOcupEdifs(numMoradores));
+						inputNMoradores.setText("");
+						inputNMoradores.requestFocus();
+					}
+				} catch (Exception erroOcupEdifs) {
+					JOptionPane.showMessageDialog(menuPrincipal, erroOcupEdifs.getMessage(), "Erro", JOptionPane.WARNING_MESSAGE);
+					inputNMoradores.setText("");
+					inputNMoradores.requestFocus();
+				}
+			}
+		});
+		botaoListarOcup.setForeground(Color.WHITE);
+		botaoListarOcup.setFont(new Font("Core Sans DS 55 Bold", Font.PLAIN, 15));
+		botaoListarOcup.setBackground(new Color(0, 102, 51));
+		
+		inputIdCondInads = new JTextField();
+		inputIdCondInads.setToolTipText("Nome do morador.");
+		inputIdCondInads.setFont(new Font("Core Sans DS 35 Regular", Font.PLAIN, 15));
+		inputIdCondInads.setColumns(10);
+		inputIdCondInads.setBounds(435, 438, 87, 25);
+		condominios.add(inputIdCondInads);
 		
 		JPanel contratos = new JPanel();
 		contratos.setLayout(null);

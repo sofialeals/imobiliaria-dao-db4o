@@ -33,7 +33,8 @@ public class Condominio {
 	}
 	
 	public String toString() {
-		return "\n- Condomínio "+nome+"| ID: "+id+"| Endereço: "+endereco;
+		return "- Condomínio "+nome+" | ID: "+id+
+				"\nEndereço: "+endereco;
 	}
 	
 // MÉTODOS DE APARTAMENTO	

@@ -35,12 +35,7 @@ public class DAOCondominio extends DAO<Condominio>{
 		q.constrain(new FiltroNumMoradores(numMoradores));
 		List<Condominio> resultados = q.execute();
 		
-		if (resultados.size() > 0) {
-			return resultados;
-		}
-		else {
-			return null;
-		}
+		return resultados;
 	}
 	
 	public boolean condExiste (Object chave) {

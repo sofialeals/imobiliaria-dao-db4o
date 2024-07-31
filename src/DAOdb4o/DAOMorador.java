@@ -31,11 +31,6 @@ public class DAOMorador extends DAO<Morador> {
 		q.descend("boletos").descend("data").descend("year").constrain(LocalDate.now().getYear());
 		List<Morador> resultados = q.execute();
 		
-		if (resultados.size() > 0) {
-			return resultados;
-		}
-		else {
-			return null;
-		}
+		return resultados;
 	}
 }

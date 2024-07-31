@@ -124,6 +124,11 @@ public class Fachada {
 // MÉTODOS DO CONDOMÍNIO
 	public static Condominio cadastrarCondominio(String nome, String endereco) throws Exception{
 		DAO.begin();
+		
+		if(nome.equals("") || endereco.equals("")) {
+			throw new Exception("Existem campos vazios. Preencha-os e tente novamente.");
+		}
+		
 		boolean cadastrado = daocondominio.condExiste(endereco);
 		if(cadastrado) {
 			throw new Exception("Um condomínio com o endereço "+endereco+" já está cadastrado.");
@@ -137,6 +142,11 @@ public class Fachada {
 	
 	public static void excluirCondominio(int id) throws Exception{
 		DAO.begin();
+		
+		if(Integer.toString(id).equals("")) {
+			throw new Exception("O campo ID está vazio. Preencha-o e tente novamente.");
+		}
+		
 		Condominio condominio = Fachada.buscarCondominio(id);
 		
 		if(condominio == null) {
@@ -154,9 +164,39 @@ public class Fachada {
 		return condominios;
 	}
 	
+	public static String exibirCondominios() {
+		List<Condominio> condominios = Fachada.listarCondominios();
+		String condominiosFormatado = "";
+		
+		if(condominios.size() == 0) {
+			return "Não há condomínios cadastrados.";
+		}
+		
+		for(Condominio c : condominios) {
+			condominiosFormatado += c + "\n\n";
+		}
+		
+		return condominiosFormatado;
+	}
+	
 	public static List<Condominio> ocupacaoEdifs(int numMoradores){
 		List<Condominio> ocupacaoEdifs = daocondominio.ocupacaoEdifs(numMoradores);
 		return ocupacaoEdifs;
+	}
+	
+	public static String exibirOcupEdifs(int numMoradores) throws Exception{
+		List<Condominio> condominios = Fachada.ocupacaoEdifs(numMoradores);
+		String condominiosFormatado = "";
+		
+		if(condominios.size() == 0) {
+			throw new Exception("Não há condomínios com "+numMoradores+" moradores.");
+		}
+		
+		for(Condominio c : condominios) {
+			condominiosFormatado += c + "\n\n";
+		}
+		
+		return condominiosFormatado;
 	}
 	
 	public static Condominio buscarCondominio(int id) {
@@ -221,6 +261,26 @@ public class Fachada {
 		return inadsCondX;
 	}
 	
+	public static String exibirInadsCondX(int idCond) throws Exception{
+		Condominio condominio = Fachada.buscarCondominio(idCond);
+		if(condominio == null) {
+			throw new Exception("Não existe um condomínio com o código "+idCond+". Digite um código válido.");
+		}
+		
+		List<Morador> inads = Fachada.inadsCondX(idCond);
+		String inadsFormatado = "";
+		
+		if(inads.size() == 0) {
+			throw new Exception("Não há moradores inadimplentes no condomínio.");
+		}
+		
+		for(Morador m : inads) {
+			inadsFormatado += m + "\n\n";
+		}
+		
+		return inadsFormatado;
+	}
+	
 	public static Morador buscarMorador(String cpf){
 		Morador morador = daomorador.read(cpf);
 		
@@ -228,7 +288,7 @@ public class Fachada {
 	}
 	
 	public static String exibirMoradores() {
-		List<Morador> moradores = daomorador.readAll();
+		List<Morador> moradores = Fachada.listarMoradores();
 		String moradoresFormatado = "";
 		
 		if(moradores.size() == 0) {
