@@ -51,6 +51,10 @@ public class TelaPrincipal {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
+		CarregarFonte.carregarFonte("/Arquivos/CoreSansDS35Regular.ttf");
+		CarregarFonte.carregarFonte("/Arquivos/CoreSansDS55Bold.ttf");
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

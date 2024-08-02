@@ -13,8 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
@@ -29,6 +27,10 @@ public class TelaInicial {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
+		CarregarFonte.carregarFonte("/Arquivos/CoreSansDS35Regular.ttf");
+		CarregarFonte.carregarFonte("/Arquivos/CoreSansDS55Bold.ttf");
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -57,12 +59,10 @@ public class TelaInicial {
 		telaInicial.getContentPane().setLayout(null);
 		telaInicial.setVisible(true);
 		
-		ImageIcon icon = new ImageIcon("C:\\Users\\Sofia\\Documents\\Sofia\\POB\\Imobiliaria\\src\\Arquivos\\apartamento-1.png");
-		
 		JLabel logo = new JLabel("");
 		logo.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		logo.setIcon(new ImageIcon("C:\\Users\\Sofia\\Downloads\\arquivos\\apartamento-1.png"));
+		logo.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(TelaInicial.class.getResource("/Arquivos/apartamento-1.png"))));
 		
 		logo.setBounds(184, 25, 50, 50);
 		telaInicial.getContentPane().add(logo);
