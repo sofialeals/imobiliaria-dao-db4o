@@ -33,12 +33,7 @@ public class DAOBoleto extends DAO<Boleto>{
 		
 		List<Boleto> resultados = q.execute();
 		
-		if (resultados.size() > 0) {
-			return resultados;
-		}
-		else {
-			return null;
-		}
+		return resultados;
 	}
 	
 	public List<Boleto> boletosNPMorador(Object chave){

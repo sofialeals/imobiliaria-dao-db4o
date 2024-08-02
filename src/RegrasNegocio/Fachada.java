@@ -65,12 +65,27 @@ public class Fachada {
 		return boletos;
 	}
 	
+	public static String exibirTodosOsBoletos() {
+		List<Boleto> boletos = Fachada.listarBoletos();
+		String boletosFormatado = "";
+		
+		if(boletos.size()== 0) {
+			return "Ainda não há boletos cadastrados.";
+		}
+		
+		for(Boleto b : boletos) {
+			boletosFormatado += b + "\n\n";
+		}
+		
+		return boletosFormatado;
+	}
+	
 	public static boolean pagarBoleto(int codBoleto) throws Exception{
 		DAO.begin();
 		Boleto boleto = Fachada.buscarBoleto(codBoleto);
 		
 		if(boleto == null) {
-			throw new Exception("O boleto de código "+codBoleto+" não existe");
+			throw new Exception("O boleto de código "+codBoleto+" não existe.");
 		}
 		
 		Morador morador = boleto.getMorador();
@@ -93,6 +108,21 @@ public class Fachada {
 	public static List<Boleto> boletosNP(int ano){
 		List<Boleto> boletosNP = daoboleto.boletosNP(ano);
 		return boletosNP;
+	}
+	
+	public static String exibirBoletosNP(int ano) {
+		List<Boleto> boletosNP = Fachada.boletosNP(ano);
+		String boletosNPFormatado = "";
+		
+		if(boletosNP.size() == 0) {
+			return "Não há boletos atrasados no ano de "+ano+".";
+		}
+		
+		for(Boleto b : boletosNP) {
+			boletosNPFormatado += b + "\n\n";
+		}
+		
+		return boletosNPFormatado;
 	}
 	
 	public static List<Boleto> boletosNPMorador(String cpf){
@@ -142,10 +172,6 @@ public class Fachada {
 	
 	public static void excluirCondominio(int id) throws Exception{
 		DAO.begin();
-		
-		if(Integer.toString(id).equals("")) {
-			throw new Exception("O campo ID está vazio. Preencha-o e tente novamente.");
-		}
 		
 		Condominio condominio = Fachada.buscarCondominio(id);
 		
@@ -333,12 +359,20 @@ public class Fachada {
 			}
 		}
 		
-		condominio.adcMorador(morador);
-		morador.adcCondominio(condominio);
-		morador.adcApartamento(numApart);
+		if(condominio.getMoradores().contains(morador)) {
+			morador.adcApartamento(numApart);
+			
+			daomorador.update(morador);
+		} else {
+			condominio.adcMorador(morador);
+			morador.adcCondominio(condominio);
+			morador.adcApartamento(numApart);
+			
+			daocondominio.update(condominio);
+			daomorador.update(morador);
+		}
+
 		Fachada.gerarBoleto(condominio, morador, numApart, valorAluguel);
-		daocondominio.update(condominio);
-		daomorador.update(morador);
 		
 		DAO.commit();
 	}
@@ -394,7 +428,7 @@ public class Fachada {
 		return true;
 	}
 	
-	public static int adcBoleto() {
+	public static int adcBoletos() {
 		int qntBoletos = 0;
 		LocalDate dataAtual = LocalDate.now();
 		if(Fachada.listarMoradores().size() > 0) {
